@@ -173,10 +173,18 @@ def load_data():
   print(f"✅ [bold cyan]Canciones con tags asignados:[/bold cyan] {tags_df.shape[0]}")
 
 
+  metadata = pd.read_csv(metadata_path, delimiter='\t')
+  metadata = metadata[metadata['clip_id'].isin(genres_df['clip_id'])]
+
+  print(f"✅ [bold cyan]Cargados metadatos de {metadata.shape[0]} canciones.[/bold cyan]")
+  _print_table("\nMetadatos", metadata.head())
+
   if os.path.exists(genres_db_path):
     os.remove(genres_db_path)
   if os.path.exists(tags_db_path):
     os.remove(tags_db_path)
+  if os.path.exists(metadata_db_path):
+    os.remove(metadata_db_path)
 
   conn = sqlite3.connect(genres_db_path)
   genres_df.to_sql('genres', conn, index=False)
@@ -184,6 +192,10 @@ def load_data():
 
   conn = sqlite3.connect(tags_db_path)
   tags_df.to_sql('tags', conn, index=False)
+  conn.close()
+
+  conn = sqlite3.connect(metadata_db_path)
+  metadata.to_sql('metadata', conn, index=False)
   conn.close()
 
 
