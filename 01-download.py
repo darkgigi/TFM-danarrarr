@@ -4,9 +4,6 @@ import requests
 import sys
 from rich.progress import Progress
 from rich import print
-from rich.color import ANSI_COLOR_NAMES
-print(ANSI_COLOR_NAMES)  # Lista de colores soportados
-
 
 dataset_urls = [
   "https://mirg.city.ac.uk/datasets/magnatagatune/mp3.zip.001",
