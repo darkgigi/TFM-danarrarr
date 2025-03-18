@@ -2,8 +2,11 @@ import os
 import zipfile
 import requests
 import sys
-from rich.progress import track
+from rich.progress import Progress
 from rich import print
+from rich.color import ANSI_COLOR_NAMES
+print(ANSI_COLOR_NAMES)  # Lista de colores soportados
+
 
 dataset_urls = [
   "https://mirg.city.ac.uk/datasets/magnatagatune/mp3.zip.001",
@@ -36,18 +39,19 @@ def download_files():
       print(f"✅ [bold cyan]{part_file_path} ya existe, omitiendo descarga.[/bold cyan]")
       continue
 
-    print(f"⬇️ [bold mediumorchid] Descargando {part_file_path}...[/bold mediumorchid]")
+    print(f"⬇️ [bold medium_orchid] Descargando {part_file_path}...[/bold medium_orchid]")
     try:
       response = requests.get(url, stream=True)
       response.raise_for_status()
       total_size = int(response.headers.get('content-length', 0))
       block_size = 8192
-      t = track(total=total_size, unit='iB', unit_scale=True, desc=part_file_path, ascii=True)
-      with open(part_file_path, 'wb') as part_file:
-        for chunk in response.iter_content(chunk_size=block_size):
-          t.update(len(chunk))
-          part_file.write(chunk)
-      t.close()
+      with Progress() as progress:
+        task = progress.add_task(f"[cyan]Descargando {part_file_path}...", total=total_size)
+        with open(part_file_path, 'wb') as part_file:
+          for chunk in response.iter_content(chunk_size=block_size):
+            if chunk:
+              part_file.write(chunk)
+              progress.update(task, advance=len(chunk))
       print(f"✅ [bold cyan]Descarga de {part_file_path} completada.[/bold cyan]")
     except requests.exceptions.RequestException as e:
       print(f"❌ [bold red]Error al descargar {part_file_path}: {e}[/bold red]")
@@ -59,7 +63,7 @@ def merge_parts():
     print("✅ [bold cyan]Archivo ZIP ya unido, omitiendo.[/bold cyan]")
     return
 
-  print("🔗 Uniendo archivos en un solo ZIP...")
+  print("🔗 [bold bright_black]Uniendo archivos en un solo ZIP...[/bold bright_black]")
   with open(final_zip, "wb") as f_out:
     for part in zip_parts:
       with open(part, "rb") as f_in:
@@ -91,7 +95,7 @@ def extract_files():
 
 def cleanup_zip_parts():
   """ Borra los fragmentos ZIP después de unirlos. """
-  print("🗑️  [bold brightblack]Borrando partes ZIP...[/bold brightblack]")
+  print("🗑️  [bold bright_black]Borrando partes ZIP...[/bold bright_black]")
   
   for zip_file in zip_parts:
     if os.path.exists(zip_file):
@@ -107,7 +111,7 @@ def cleanup_final_zip():
 def reset_dataset():
   """ Elimina el dataset completo de forma segura. """
   if os.path.exists(output_dir):
-    print("🗑️  [bold brightblack]Borrando dataset completo...[/bold brightblack]")
+    print("🗑️  [bold bright_black]Borrando dataset completo...[/bold bright_black]")
 
     # Cambiamos permisos si es necesario
     for root, dirs, files in os.walk(output_dir, topdown=False):
@@ -144,7 +148,7 @@ def download_metadata_and_genres():
     print("✅ [bold cyan]Metadatos y géneros ya descargados.[/bold cyan]")
     return
 
-  print("⬇️  [bold mediumorchid]Descargando metadatos y géneros...[/bold mediumorchid]")
+  print("⬇️  [bold medium_orchid]Descargando metadatos y géneros...[/bold medium_orchid]")
   response = requests.get(metadata_url)
   with open(metadata_path, 'wb') as metadata_file:
     metadata_file.write(response.content)
