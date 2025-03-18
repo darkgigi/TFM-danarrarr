@@ -90,8 +90,8 @@ def load_data():
     "female vocals", "voices", "different", "clapping", "monks", "flute", 
     "beat", "upbeat", "soft", "noise", "choir", "female singer", "quick", "water", 
     "women", "fiddle", "mp3_path", "english", "electric", "no voice", "no strings", "no piano", "no voices",
-    "no beat", "no singing", "not classical", "not rock", "no guitar", "no vocal", "no vocals", "no flute",
-    "no singer", "no drums", "not opera", "not english"
+    "no beat", "no singing", "no guitar", "no vocal", "no vocals", "no flute",
+    "no singer", "no drums", "not english"
   ]
 
   genres_df = pd.DataFrame(df[genres])
@@ -128,7 +128,7 @@ def load_data():
   print(f"\n[bold yellow]⚠️  {no_genre_count} fragmentos sin género serán procesados.[/bold yellow]")
 
   tag_merges = {
-    'male vocals': ['male vocal', 'male voice', 'men', 'male', 'male singer', 'man singing'],
+    'male vocals': ['male vocal', 'male voice', 'men', 'male', 'male singer', 'man singing', 'man'],
     'female vocals': ['female vocal', 'female voice', 'woman singing', 'female singer', 'girl', 'female singing', 'female', 'women', 'woman'],
     'vocals': ['voice', 'voices', 'singer', 'chanting', 'singing'],
     'guitar': ['guitars'],
@@ -143,6 +143,8 @@ def load_data():
     'drum': ['drums'],
     'choral': ['chorus', 'monks', 'choir'],
     'synthesizer': ['synth'], 
+    'no vocals': ['no voice', 'no singer', 'no vocal', 'no voices'],
+    'beats': ['beat'],
   }
 
   for main_tag, similar_tags in tag_merges.items():
@@ -170,7 +172,8 @@ def load_data():
 
   # Borramos las canciones sin género del dataframe de tags
   tags_df = tags_df[tags_df['clip_id'].isin(genres_df['clip_id'])]
-  print(f"✅ [bold cyan]Canciones con tags asignados:[/bold cyan] {tags_df.shape[0]}")
+  tags = tags_df[tags_df.drop(columns=['clip_id', 'mp3_path']).sum(axis=1) > 0]
+  print(f"✅ [bold cyan]Canciones con tags asignados:[/bold cyan] {tags.shape[0]}")
 
 
   metadata = pd.read_csv(metadata_path, delimiter='\t')
