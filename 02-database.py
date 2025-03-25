@@ -18,22 +18,30 @@ def _extract_song_id(path):
   return re.sub(r"-\d+-\d+\.mp3$", "", path)
 
 def _assign_missing_genres(genres_df):
-  """Asigna a los fragmentos sin género los géneros mayoritarios de su canción."""
+  """Asigna a los fragmentos sin género los géneros mayoritarios de su canción si al 
+  menos el 50% de los fragmentos tienen género asignado."""
+
   print("\n[bold cyan]▶ Asignando géneros a fragmentos sin género...[/bold cyan]")
 
   genres_df["song_id"] = genres_df["mp3_path"].apply(_extract_song_id)
   genre_columns = [col for col in genres_df.columns if col not in ["clip_id", "mp3_path", "song_id"]]
-  genre_majority = genres_df.groupby("song_id")[genre_columns].max()
+  
+  total_fragments = genres_df.groupby("song_id").size()
+  fragments_with_genre = genres_df[genre_columns].groupby(genres_df["song_id"]).sum().gt(0).sum(axis=1)
 
+  valid_songs = fragments_with_genre / total_fragments >= 0.5
+
+  genre_majority = genres_df.groupby("song_id")[genre_columns].max()
   # **No tenemos en cuenta canciones donde todos los fragmentos tienen no tienen género**
-  valid_songs = genre_majority[genre_majority.sum(axis=1) > 0]
+  genre_majority = genre_majority.loc[valid_songs[valid_songs].index] 
+    
   missing_genres_mask = genres_df[genre_columns].sum(axis=1) == 0
   missing_genres_df = genres_df[missing_genres_mask]
 
   for index, row in track(missing_genres_df.iterrows(), total=len(missing_genres_df), description="Asignando géneros..."):
-    song_id = row["song_id"]
-    if song_id in valid_songs.index: 
-      genres_df.loc[index, genre_columns] = valid_songs.loc[song_id]
+      song_id = row["song_id"]
+      if song_id in genre_majority.index: 
+          genres_df.loc[index, genre_columns] = genre_majority.loc[song_id]
 
   genres_df.drop(columns=["song_id"], inplace=True)
 
