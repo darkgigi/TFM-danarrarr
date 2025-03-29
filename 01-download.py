@@ -12,23 +12,17 @@ dataset_urls = [
 ]
 
 output_dir = "dataset"
-zip_parts = [
-  os.path.join(output_dir, f"mp3.zip.{i + 1:03d}") for i in range(len(dataset_urls))
-]
+zip_parts = [os.path.join(output_dir, f"mp3.zip.{i + 1:03d}") for i in range(len(dataset_urls))]
 final_zip = os.path.join(output_dir, "mp3.zip")
 
 
 def dataset_already_extracted():
   """Verifica si la carpeta dataset ya tiene archivos o subcarpetas."""
   if os.path.exists(output_dir):
-    subdirs = [
-      d for d in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir, d))
-    ]
+    subdirs = [d for d in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir, d))]
 
     if subdirs:
-      print(
-        "✅ [bold cyan]Dataset ya extraído, omitiendo descarga y extracción.[/bold cyan]"
-      )
+      print("✅ [bold cyan]Dataset ya extraído, omitiendo descarga y extracción.[/bold cyan]")
       return True
   return False
 
@@ -41,23 +35,17 @@ def download_files():
     part_file_path = zip_parts[i]
 
     if os.path.exists(part_file_path):
-      print(
-        f"✅ [bold cyan]{part_file_path} ya existe, omitiendo descarga.[/bold cyan]"
-      )
+      print(f"✅ [bold cyan]{part_file_path} ya existe, omitiendo descarga.[/bold cyan]")
       continue
 
-    print(
-      f"⬇️ [bold medium_orchid] Descargando {part_file_path}...[/bold medium_orchid]"
-    )
+    print(f"⬇️ [bold medium_orchid] Descargando {part_file_path}...[/bold medium_orchid]")
     try:
       response = requests.get(url, stream=True)
       response.raise_for_status()
       total_size = int(response.headers.get("content-length", 0))
       block_size = 8192
       with Progress() as progress:
-        task = progress.add_task(
-          f"[cyan]Descargando {part_file_path}...", total=total_size
-        )
+        task = progress.add_task(f"[cyan]Descargando {part_file_path}...", total=total_size)
         with open(part_file_path, "wb") as part_file:
           for chunk in response.iter_content(chunk_size=block_size):
             if chunk:
@@ -92,9 +80,7 @@ def extract_files():
     return
 
   if not os.path.exists(final_zip):
-    print(
-      "❌ [bold red]No se encontró el archivo ZIP completo. ¿Se fusionaron correctamente las partes?[/bold red]"
-    )
+    print("❌ [bold red]No se encontró el archivo ZIP completo. ¿Se fusionaron correctamente las partes?[/bold red]")
     return
 
   print("📂 [bold green]Extrayendo archivos ZIP...[/bold green]")
@@ -167,9 +153,7 @@ def download_metadata_and_genres():
     print("✅ [bold cyan]Metadatos y géneros ya descargados.[/bold cyan]")
     return
 
-  print(
-    "⬇️  [bold medium_orchid]Descargando metadatos y géneros...[/bold medium_orchid]"
-  )
+  print("⬇️  [bold medium_orchid]Descargando metadatos y géneros...[/bold medium_orchid]")
   response = requests.get(metadata_url)
   with open(metadata_path, "wb") as metadata_file:
     metadata_file.write(response.content)
