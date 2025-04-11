@@ -122,7 +122,8 @@ def _delete_fragments_without_audio_features(genres_df, tags_df, metadata_df, fe
 		print(f"[bold red]❌ Hay {len(no_audio_features_songs)} fragmentos sin características de audio.[/bold red]")
 		print(f"[bold red]❌ Se eliminarán {len(songs_without_features)} canciones con fragmentos sin características de audio.[/bold red]")
 
-		genres_df = genres_df[~genres_df["song_id"].isin(songs_without_features)]
+		genres_df = genres_df[~genres_df["song_id"].isin(songs_without_features)].copy()
+		genres_df.drop(columns=["song_id"], inplace=True)
 		tags_df = tags_df[tags_df["clip_id"].isin(genres_df["clip_id"])]
 		metadata_df = metadata_df[metadata_df["clip_id"].isin(genres_df["clip_id"])]
 		features_df = features_df[features_df["clip_id"].isin(genres_df["clip_id"])]
