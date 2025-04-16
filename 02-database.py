@@ -79,24 +79,13 @@ def _extract_audio_features(clip_id, mp3_path, base_dir):
 		audio, sr = librosa.load(path, sr=None)
 
 		tempo, beats = librosa.beat.beat_track(y=audio, sr=sr)
-		chroma_stft = librosa.feature.chroma_stft(y=audio, sr=sr)
-		spectral_centroid = librosa.feature.spectral_centroid(y=audio, sr=sr)
-		spectral_bandwidth = librosa.feature.spectral_bandwidth(y=audio, sr=sr)
-		spectral_rolloff = librosa.feature.spectral_rolloff(y=audio, sr=sr)
-		zero_crossing_rate = librosa.feature.zero_crossing_rate(y=audio)
 		mfcc = librosa.feature.mfcc(y=audio, sr=sr)
 
 		return {
 			"clip_id": clip_id,
 			"mp3_path": mp3_path,
 			"tempo": tempo,
-			"beats": beats,
-			"chroma_stft": chroma_stft.mean(),
-			"spectral_centroid": spectral_centroid.mean(),
-			"spectral_bandwidth": spectral_bandwidth.mean(),
-			"spectral_rolloff": spectral_rolloff.mean(),
-			"zero_crossing_rate": zero_crossing_rate.mean(),
-			"mfcc": mfcc.mean(),
+			"mfcc": mfcc.flatten(),
 		}
 	except Exception as e:
 		print(f"❌ [bold red]Error: No se pudieron extraer características de {mp3_path}: {e}[/bold red]")
@@ -146,7 +135,7 @@ def _print_table(title, df):
 	print(table)
 
 
-def load_data():
+def load_data(n_jobs=-1):
 	if not os.path.exists(genres_path):
 		print(f"[bold red]❌ Error:[/bold red] El archivo {genres_path} no existe.")
 		return
@@ -276,7 +265,7 @@ def load_data():
 	_print_table("\nMetadatos", metadata_df.head())
 
 	dataset_path = os.path.join(dir, "dataset/")
-	features_df = _extract_all_audio_features(genres_df, dataset_path)
+	features_df = _extract_all_audio_features(genres_df, dataset_path, n_jobs=n_jobs)
 	print(f"✅ [bold cyan]Extraídas características de audio de {features_df.shape[0]} fragmentos.[/bold cyan]")
 	_print_table("\nCaracterísticas de audio", features_df.head())
 
@@ -310,4 +299,4 @@ def load_data():
 
 
 if __name__ == "__main__":
-	load_data()
+	load_data(n_jobs=6)
