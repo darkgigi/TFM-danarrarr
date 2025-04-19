@@ -8,6 +8,7 @@ from rich.table import Table
 import librosa
 from joblib import Parallel, delayed
 import soundfile as sf
+import numpy as np
 
 dir = os.path.dirname(__file__)
 genres_path = os.path.join(dir, 'dataset/genres.csv')
@@ -76,16 +77,28 @@ def _extract_audio_features(clip_id, mp3_path, base_dir):
 	"""Extrae características de un solo archivo de audio."""
 	try:
 		path = os.path.join(base_dir, mp3_path)
-		audio, sr = librosa.load(path, sr=None)
+		audio, sr = librosa.load(path, sr=22050, mono=True)
+
+		stft = librosa.stft(audio, n_fft=2048, hop_length=512, window='hann')
+		stft_magnitude = np.abs(stft) ** 2
+		stft_mean = stft_magnitude.mean(axis=1)
 
 		tempo, beats = librosa.beat.beat_track(y=audio, sr=sr)
-		mfcc = librosa.feature.mfcc(y=audio, sr=sr)
+		tempo_val = np.array([tempo], dtype=np.float32)
+
+		mfcc = librosa.feature.mfcc(S=librosa.power_to_db(stft_magnitude), sr=sr, n_mfcc=13)
+		mfcc_mean = mfcc.mean(axis=1)
+
+		chroma = librosa.feature.chroma_stft(S=stft_magnitude, sr=sr)
+		chroma_mean = chroma.mean(axis=1)
 
 		return {
 			"clip_id": clip_id,
 			"mp3_path": mp3_path,
-			"tempo": tempo,
-			"mfcc": mfcc.flatten(),
+			"tempo": tempo_val,
+			"stft_mean": stft_mean,
+			"mfcc_mean": mfcc_mean,
+			"chroma_mean": chroma_mean
 		}
 	except Exception as e:
 		print(f"❌ [bold red]Error: No se pudieron extraer características de {mp3_path}: {e}[/bold red]")
