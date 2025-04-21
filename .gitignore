@@ -2,3 +2,4 @@ venv
 dataset/
 pyproject.toml
 .ruff_cache
+models/
