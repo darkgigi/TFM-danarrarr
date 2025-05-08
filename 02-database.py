@@ -194,7 +194,8 @@ def load_data(n_jobs=-1):
 	tags_df = pd.DataFrame(df[tags])
 	tags_df = tags_df.astype({col: 'bool' for col in tags_df.columns if col not in ['clip_id', 'mp3_path']})
 
-	print(f"\n✅ [bold cyan]Géneros cargados:[/bold cyan] {genres_df.shape[1] - 2}")
+	print(f"\n✅ [bold cyan]Fragmentos cargados:[/bold cyan] {genres_df.shape[0]}")
+	print(f"✅ [bold cyan]Géneros cargados:[/bold cyan] {genres_df.shape[1] - 2}")
 	print(f"✅ [bold cyan]Tags cargados:[/bold cyan] {tags_df.shape[1] - 2}")
 
 	# Convertimos los datos a boolean y fusionamos los campos parecidos con OR
